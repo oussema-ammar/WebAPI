@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WebAPI.DTO;
 using WebAPI.Interfaces;
+using WebAPI.Repositories;
 
 namespace WebAPI.Controllers
 {
@@ -49,6 +50,13 @@ namespace WebAPI.Controllers
         {
             var ticket = _ticketRepository.GetTicket(ticketId);
             return Ok(ticket);
+        }
+
+        [HttpGet("{clientId}"), Authorize(Roles = "Admin")]
+        public IActionResult GetUserTickets(int id)
+        {
+            var tickets = _ticketRepository.GetUserTickets(id);
+            return Ok(tickets);
         }
 
         [HttpDelete,Authorize(Roles ="Admin")]

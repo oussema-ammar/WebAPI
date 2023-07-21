@@ -9,6 +9,5 @@ namespace WebAPI.Models
         public string Name { get; set; }
         [UserIsClient]
         public int UserId { get; set; }
-        public User User { get; set; }
     }
 }
