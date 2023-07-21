@@ -1,4 +1,5 @@
-﻿using WebAPI.Data;
+﻿using Microsoft.OpenApi.Writers;
+using WebAPI.Data;
 using WebAPI.DTO;
 using WebAPI.Interfaces;
 using WebAPI.Models;
@@ -44,6 +45,30 @@ namespace WebAPI.Repositories
             var user = _context.Users.Where(b => b.Id == id).FirstOrDefault()
             ?? throw new Exception("User doesn't exist.");
             return user;
+        }
+
+        public ICollection<UserDisplayDTO> GetUsers()
+        {
+            ICollection<User> fullUsers= _context.Users.OrderBy(u => u.Id).ToList();
+            ICollection<UserDisplayDTO> users = new List<UserDisplayDTO>();
+            foreach (var fullUser in fullUsers)
+            {
+                //map each fullUser onto each user in users 
+
+                UserDisplayDTO user = new UserDisplayDTO
+                {
+                    Id = fullUser.Id,
+                    Name = fullUser.Name,
+                    Email = fullUser.Email,
+                    Role = fullUser.Role,
+                    PasswordHash = fullUser.PasswordHash,
+                    PasswordSalt = fullUser.PasswordSalt,
+                    PhotoPath = fullUser.PhotoPath,
+                    CreationDate = fullUser.CreationDate,
+                };
+                users.Add(user);
+            }
+            return users;
         }
 
         public void UpdateUser(User user)

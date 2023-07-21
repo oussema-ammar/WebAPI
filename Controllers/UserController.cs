@@ -8,7 +8,7 @@ using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("v1/users/")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -66,16 +66,30 @@ namespace WebAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("user/details"), Authorize]
-        public IActionResult GetUserDetails()
+
+        [HttpGet, Authorize(Roles = "Admin")]
+        public IActionResult GetUsers()
         {
-            int id = GetMe();
+            var user = _UserRepository.GetUsers();
+            return Ok(user);
+        }
+
+        [HttpGet("{id}"), Authorize(Roles = "Admin")]
+        public IActionResult GetUserDetails(int id)
+        {
             var user = _UserRepository.GetUser(id);
             return Ok(user);
         }
 
-        [HttpPut("user/edit"), Authorize]
-        public IActionResult EditCurrentUser(UserEditDTO userUpdateDTO)
+        [HttpGet("Me"), Authorize]
+        public IActionResult GetCurrentUserDetails()
+        {
+            var user = _UserRepository.GetUser(GetMe());
+            return Ok(user);
+        }
+
+        [HttpPut, Authorize]
+        public IActionResult EditUser(UserEditDTO userUpdateDTO)
         {
             try
             {
@@ -101,7 +115,7 @@ namespace WebAPI.Controllers
             }
         }
 
-        [HttpPut("user/edit/{id}"), Authorize(Roles = "Admin")]
+        [HttpPut("{id}"), Authorize(Roles = "Admin")]
         public IActionResult EditUser(int id, UserEditDTO userUpdateDTO)
         {
             try
@@ -129,7 +143,22 @@ namespace WebAPI.Controllers
             }
         }
 
-        [HttpDelete("user/{id}"), Authorize(Roles = "Admin")]
+        [HttpDelete, Authorize]
+        public IActionResult Delete()
+        {
+            try
+            {
+                int id = GetMe();
+                _UserRepository.DeleteUser(id);
+                return Ok(id);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id}"), Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             try
@@ -143,10 +172,9 @@ namespace WebAPI.Controllers
             }
         }
 
-        [HttpGet, Authorize]
-        public int GetMe()
+        private int GetMe()
         {
-            var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var id = User.FindFirstValue("Id");
             return int.Parse(id);
         }
     }
