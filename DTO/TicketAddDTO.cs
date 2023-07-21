@@ -1,15 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 using WebAPI.Services;
 
-namespace WebAPI.Models
+namespace WebAPI.DTO
 {
-    public class Ticket
+    public class TicketAddDTO
     {
-        public int Id { get; set; }
         [UserIsClient]
         public int UserId { get; set; }
+        [Required]
         public string Subject { get; set; }
+        [Required]
         public string Content { get; set; }
-        public DateTime CreationDate { get; set; }
     }
 }

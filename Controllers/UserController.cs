@@ -8,7 +8,7 @@ using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
-    [Route("v1/users/")]
+    [Route("v1/users")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -70,8 +70,8 @@ namespace WebAPI.Controllers
         [HttpGet, Authorize(Roles = "Admin")]
         public IActionResult GetUsers()
         {
-            var user = _UserRepository.GetUsers();
-            return Ok(user);
+            var users = _UserRepository.GetUsers();
+            return Ok(users);
         }
 
         [HttpGet("{id}"), Authorize(Roles = "Admin")]
