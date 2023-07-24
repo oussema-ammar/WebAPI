@@ -82,6 +82,7 @@ namespace WebAPI.Repositories
                 existingUser = user;
 
                 // Call the SaveChanges method to persist the changes to the database
+                _context.Update(existingUser);
                 _context.SaveChanges();
             }
         }

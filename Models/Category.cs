@@ -9,5 +9,6 @@ namespace WebAPI.Models
         public string Name { get; set; }
         [UserIsClient]
         public int UserId { get; set; }
+        public ICollection<SensorCategory> SensorCategories { get; set; }
     }
 }

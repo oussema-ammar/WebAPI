@@ -13,9 +13,11 @@ namespace WebAPI.Controllers
     public class TicketController : ControllerBase
     {
         private readonly ITicketRepository _ticketRepository;
-        public TicketController(ITicketRepository ticketRepository)
+        private readonly IUserRepository _userRepository;
+        public TicketController(ITicketRepository ticketRepository, IUserRepository userRepository)
         {
             _ticketRepository = ticketRepository;
+            _userRepository = userRepository;
         }
 
         [HttpPost, Authorize(Roles ="Client")]
@@ -48,22 +50,47 @@ namespace WebAPI.Controllers
         [HttpGet("{ticketId}"), Authorize(Roles ="Admin")]
         public IActionResult GetTicket(int ticketId)
         {
-            var ticket = _ticketRepository.GetTicket(ticketId);
-            return Ok(ticket);
+            try
+            {
+                var ticket = _ticketRepository.GetTicket(ticketId);
+                return Ok(ticket);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
 
-        [HttpGet("{clientId}"), Authorize(Roles = "Admin")]
-        public IActionResult GetUserTickets(int id)
+        [HttpGet("/users/tickets/{userId}"), Authorize]
+        public IActionResult GetUserTickets(int userId)
         {
-            var tickets = _ticketRepository.GetUserTickets(id);
-            return Ok(tickets);
+            try
+            {
+                if (userId == GetMe() || _userRepository.GetUser(GetMe()).Role == "Admin")
+                {
+                    var tickets = _ticketRepository.GetUserTickets(userId);
+                    return Ok(tickets);
+                }
+                return BadRequest("Forbidden");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
 
-        [HttpDelete,Authorize(Roles ="Admin")]
+        [HttpDelete("{id}"),Authorize]
         public IActionResult DeleteTicket(int id)
         {
-            _ticketRepository.DeleteTicket(id);
-            return Ok();
+            var ticket = _ticketRepository.GetTicket(id);
+            if (ticket.UserId == GetMe() || _userRepository.GetUser(GetMe()).Role == "Admin")
+            {
+                _ticketRepository.DeleteTicket(id);
+                return Ok();
+            }
+            return BadRequest();
         }
 
         private int GetMe()

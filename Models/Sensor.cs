@@ -10,7 +10,7 @@ namespace WebAPI.Models
         public string ReferenceCode { get; set; }
         [UserIsClient]
         public int UserId { get; set; }
-        public User User { get; set; }
-        public ICollection<Category> Categories { get; set; }
+        //public User User { get; set; }
+        public ICollection<SensorCategory> SensorCategories { get; set; } = new List<SensorCategory>();
     }
 }

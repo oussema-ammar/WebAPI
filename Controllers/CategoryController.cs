@@ -42,10 +42,10 @@ namespace WebAPI.Controllers
             return Ok(categories);
         }
 
-        [HttpGet("{clientId}"), Authorize(Roles = "Admin")]
-        public IActionResult GetUserCategories(int id)
+        [HttpGet("/users/categories/{clientId}"), Authorize(Roles = "Admin")]
+        public IActionResult GetUserCategories(int clientId)
         {
-            var categories = _categoryRepository.GetUserCategories(id);
+            var categories = _categoryRepository.GetUserCategories(clientId);
             return Ok(categories);
         }
 
@@ -60,14 +60,21 @@ namespace WebAPI.Controllers
         [HttpGet("{categoryId}"), Authorize]
         public IActionResult GetCategory(int categoryId)
         {
-            var category = _categoryRepository.GetCategory(categoryId);
-            return Ok(category);
+            try
+            {
+                var category = _categoryRepository.GetCategory(categoryId);
+                return Ok(category);
+            }
+            catch(Exception ex)
+            { 
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{categoryId}"), Authorize]
-        public IActionResult EditCategory(int id, string name)
+        public IActionResult EditCategory(int categoryId, string name)
         {
-            _categoryRepository.UpdateCategory(id, name);
+            _categoryRepository.UpdateCategory(categoryId, name);
             return Ok("Category Updated.");
         }
 

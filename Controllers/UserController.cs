@@ -12,11 +12,11 @@ namespace WebAPI.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserRepository _UserRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         public UserController(IUserRepository userRepository, IPasswordHasher passwordHasher)
         {
-            _UserRepository = userRepository;
+            _userRepository = userRepository;
             _passwordHasher = passwordHasher;
         }
 
@@ -42,7 +42,7 @@ namespace WebAPI.Controllers
             try
             {
                 //Saving the new User to the Database
-                bool t = _UserRepository.RegisterUser(user);
+                bool t = _userRepository.RegisterUser(user);
                 return Ok("User Added");
             }
             catch (Exception ex)
@@ -57,7 +57,7 @@ namespace WebAPI.Controllers
             try
             {
                 var user = new User();
-                user = _UserRepository.Login(request);
+                user = _userRepository.Login(request);
                 string token = _passwordHasher.CreateToken(user);
                 return Ok(token);
             }
@@ -70,22 +70,26 @@ namespace WebAPI.Controllers
         [HttpGet, Authorize(Roles = "Admin")]
         public IActionResult GetUsers()
         {
-            var users = _UserRepository.GetUsers();
+            var users = _userRepository.GetUsers();
             return Ok(users);
         }
 
-        [HttpGet("{id}"), Authorize(Roles = "Admin")]
+        [HttpGet("{id}"), Authorize]
         public IActionResult GetUserDetails(int id)
         {
-            var user = _UserRepository.GetUser(id);
-            return Ok(user);
-        }
-
-        [HttpGet("Me"), Authorize]
-        public IActionResult GetCurrentUserDetails()
-        {
-            var user = _UserRepository.GetUser(GetMe());
-            return Ok(user);
+            try
+            {
+                if (GetMe() == id || _userRepository.GetUser(GetMe()).Role == "Admin")
+                {
+                    var user = _userRepository.GetUser(id);
+                    return Ok(user);
+                }
+                return BadRequest("You're forbidden to access this data");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }    
         }
 
         [HttpPut, Authorize]
@@ -94,7 +98,7 @@ namespace WebAPI.Controllers
             try
             {
                 // Retrieve the user from the repository
-                var user = _UserRepository.GetUser(GetMe());
+                var user = _userRepository.GetUser(GetMe());
 
                 // Map the userDTO properties onto the retrieved user
                 user.Name = userUpdateDTO.Name;
@@ -105,7 +109,7 @@ namespace WebAPI.Controllers
                 user.PasswordSalt = passwordSalt;
 
                 // Save the changes to the database
-                _UserRepository.UpdateUser(user);
+                _userRepository.UpdateUser(user);
 
                 return Ok(user);
             }
@@ -121,7 +125,7 @@ namespace WebAPI.Controllers
             try
             {
                 // Retrieve the user from the repository
-                var retrievedUser = _UserRepository.GetUser(id);
+                var retrievedUser = _userRepository.GetUser(id);
 
                 // Map the userUpdateDTO properties onto the retrieved user
                 retrievedUser.Id = id;
@@ -133,7 +137,7 @@ namespace WebAPI.Controllers
                 retrievedUser.PasswordSalt = passwordSalt;
 
                 // Save the changes to the database
-                _UserRepository.UpdateUser(retrievedUser);
+                _userRepository.UpdateUser(retrievedUser);
 
                 return Ok(userUpdateDTO);
             }
@@ -149,7 +153,7 @@ namespace WebAPI.Controllers
             try
             {
                 int id = GetMe();
-                _UserRepository.DeleteUser(id);
+                _userRepository.DeleteUser(id);
                 return Ok(id);
             }
             catch (Exception ex)
@@ -162,8 +166,8 @@ namespace WebAPI.Controllers
         public IActionResult Delete(int id)
         {
             try
-            {
-                _UserRepository.DeleteUser(id);
+            {   
+                _userRepository.DeleteUser(id);
                 return Ok(id);
             }
             catch (Exception ex)
